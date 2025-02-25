@@ -4,7 +4,11 @@ import google.generativeai as genai
 from flask import Flask, request
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
-import asyncio
+import threading
+
+# Cấu hình logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Lấy Token từ biến môi trường
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
@@ -30,8 +34,12 @@ async def chat(update: Update, context: CallbackContext) -> None:
     if user_message in ["bạn là ai", "mày là ai", "bot là ai"]:
         bot_reply = f"🤖 Tôi là {BOT_NAME}, được {BOT_CREATOR} tạo ra để hỗ trợ bạn."
     else:
-        response = model.generate_content(user_message)
-        bot_reply = response.text if response else "❌ Lỗi khi xử lý yêu cầu."
+        try:
+            response = model.generate_content(user_message)
+            bot_reply = response.text if response else "❌ Lỗi khi xử lý yêu cầu."
+        except Exception as e:
+            logger.error(f"Lỗi AI: {e}")
+            bot_reply = "❌ Lỗi xử lý AI."
 
     await update.message.reply_text(bot_reply)
 
@@ -61,24 +69,24 @@ def home():
     return "Bot is running!"
 
 @app.route(f"/{TELEGRAM_TOKEN}", methods=["POST"])
-async def webhook():
+def webhook():
     update = Update.de_json(request.get_json(), bot_app.bot)
-    await bot_app.process_update(update)
+    bot_app.create_task(bot_app.process_update(update))
     return "OK", 200
 
-async def run_bot():
+def run_flask():
+    """Chạy Flask trong một luồng riêng"""
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)), threaded=True)
+
+def run_bot():
     """Chạy bot Telegram dưới dạng webhook"""
-    await bot_app.run_webhook(
+    bot_app.run_webhook(
         listen="0.0.0.0",
         port=int(os.environ.get("PORT", 8080)),
         webhook_url=f"https://telegrambotchat.onrender.com/{TELEGRAM_TOKEN}"
     )
 
-async def main():
-    """Chạy song song Flask và bot Telegram trong một event loop"""
-    loop = asyncio.get_running_loop()
-    loop.create_task(run_bot())  # Chạy bot Telegram
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))  # Chạy Flask
-
 if __name__ == "__main__":
-    asyncio.run(main())
+    # Chạy Flask và bot Telegram song song
+    threading.Thread(target=run_flask, daemon=True).start()
+    run_bot()
