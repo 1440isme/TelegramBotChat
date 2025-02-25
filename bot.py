@@ -5,6 +5,10 @@ from telegram import Update
 from telegram.ext import (
     Application, CommandHandler, MessageHandler, filters, ContextTypes
 )
+import nest_asyncio
+
+# Fix lỗi "RuntimeError: This event loop is already running"
+nest_asyncio.apply()
 
 # Lấy API Key từ biến môi trường (bảo mật hơn)
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
@@ -26,8 +30,11 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if user_message in ["bạn là ai", "mày là ai", "bot là ai"]:
         bot_reply = f"🤖 Tôi là {BOT_NAME}, được {BOT_CREATOR} tạo ra để hỗ trợ bạn."
     else:
-        response = model.generate_content(user_message)
-        bot_reply = response.text if response else "❌ Tôi chưa có câu trả lời."
+        try:
+            response = model.generate_content(user_message)
+            bot_reply = response.text if response and response.text else "❌ Tôi chưa có câu trả lời."
+        except Exception as e:
+            bot_reply = f"⚠️ Lỗi API: {e}"
 
     await update.message.reply_text(bot_reply)
 
@@ -64,7 +71,10 @@ async def main():
     print("🤖 Bot đang chạy...")
     await app.run_polling()
 
+# Chạy bot với event loop phù hợp
 if __name__ == "__main__":
-    import asyncio
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
+    try:
+        asyncio.run(main())
+    except RuntimeError:
+        loop = asyncio.get_event_loop()
+        loop.create_task(main())
