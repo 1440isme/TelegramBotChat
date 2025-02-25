@@ -66,9 +66,10 @@ async def run_bot():
 
 # Cách chạy bot an toàn trên Render
 if __name__ == "__main__":
+    loop = asyncio.get_event_loop()
     try:
-        asyncio.run(run_bot())  # Chạy bot theo cách an toàn, tránh lỗi loop đã tồn tại
+        loop.run_until_complete(run_bot())
     except RuntimeError:
-        loop = asyncio.get_event_loop()
-        loop.create_task(run_bot())  # Chạy bot như một task trong event loop hiện tại
-        loop.run_forever()
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(run_bot())
