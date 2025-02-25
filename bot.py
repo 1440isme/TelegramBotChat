@@ -66,10 +66,10 @@ async def run_bot():
 
 if __name__ == "__main__":
     try:
-        asyncio.run(run_bot())  # Cách chạy chuẩn trên Python 3.12
-    except RuntimeError:  # Nếu lỗi event loop, dùng cách an toàn hơn
-        loop = asyncio.get_event_loop()
-        if loop.is_running():
-            loop.create_task(run_bot())
+        asyncio.run(run_bot())  # Cách chạy đúng trên Python 3.12
+    except RuntimeError as e:
+        if "This event loop is already running" in str(e):
+            loop = asyncio.get_event_loop()
+            loop.create_task(run_bot())  # Dùng task nếu loop đã chạy
         else:
-            loop.run_until_complete(run_bot())
+            raise
