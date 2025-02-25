@@ -64,8 +64,7 @@ async def main():
     print("🤖 Bot đang chạy...")
     await app.run_polling()
 
-# 🚀 Khởi chạy bot đúng cách trong môi trường Railway
 if __name__ == "__main__":
+    import asyncio
     loop = asyncio.get_event_loop()
-    loop.create_task(main())
-    loop.run_forever()
+    loop.run_until_complete(main())
