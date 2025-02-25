@@ -4,6 +4,7 @@ import google.generativeai as genai
 from flask import Flask, request
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
+import asyncio
 
 # Lấy Token từ biến môi trường
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
@@ -60,12 +61,15 @@ def home():
     return "Bot is running!"
 
 @app.route(f"/{TELEGRAM_TOKEN}", methods=["POST"])
-def webhook():
+async def webhook():
     update = Update.de_json(request.get_json(), bot_app.bot)
-    bot_app.process_update(update)
+    await bot_app.process_update(update)
     return "OK", 200
 
 def run_bot():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
     bot_app.run_webhook(
         listen="0.0.0.0",
         port=int(os.environ.get("PORT", 8080)),
@@ -76,4 +80,3 @@ if __name__ == "__main__":
     from threading import Thread
     Thread(target=run_bot).start()
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
-
