@@ -5,6 +5,9 @@ from flask import Flask, request
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
 import asyncio
+import nest_asyncio
+nest_asyncio.apply()
+
 
 # Lấy Token từ biến môi trường
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
