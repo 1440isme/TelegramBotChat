@@ -1,8 +1,7 @@
 python-telegram-bot
-flask
+
 google-generativeai
-nest_asyncio
-python-telegram-bot[webhooks]
+
 
 
 
