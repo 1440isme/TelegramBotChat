@@ -71,7 +71,7 @@ async def run_bot():
     await bot_app.run_webhook(
         listen="0.0.0.0",
         port=int(os.environ.get("PORT", 8080)),
-        webhook_url=f"https://your-render-url/{TELEGRAM_TOKEN}"
+        webhook_url=f"https://telegrambotchat.onrender.com/{TELEGRAM_TOKEN}"
     )
 
 async def main():
