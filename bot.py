@@ -3,7 +3,7 @@ import logging
 import google.generativeai as genai
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
-
+import asyncio
 # Cấu hình logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -63,12 +63,11 @@ async def run_bot():
     """Chạy bot Telegram bằng polling"""
     await bot_app.run_polling()
 
-if __name__ == "__main__":
     
-    import asyncio
+   
 
-    if __name__ == "__main__":
-        loop = asyncio.get_event_loop()
-        loop.create_task(run_bot())  
-        loop.run_forever()
+if __name__ == "__main__":
+    loop = asyncio.get_event_loop()
+    loop.create_task(run_bot())  # Chạy bot Telegram bằng polling
+    loop.run_forever()
 
