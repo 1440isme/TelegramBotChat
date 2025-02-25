@@ -4,6 +4,7 @@ import google.generativeai as genai
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
 import asyncio
+
 # Cấu hình logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -63,15 +64,11 @@ async def run_bot():
     """Chạy bot Telegram bằng polling"""
     await bot_app.run_polling()
 
-    
-   
-
+# Cách chạy bot an toàn trên Render
 if __name__ == "__main__":
     try:
-        loop = asyncio.get_running_loop()  # Lấy event loop đang chạy
+        asyncio.run(run_bot())  # Chạy bot theo cách an toàn, tránh lỗi loop đã tồn tại
     except RuntimeError:
-        loop = asyncio.new_event_loop()  # Tạo event loop mới nếu chưa có
-
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(run_bot())  # Chạy bot trên event loop hiện tại
-
+        loop = asyncio.get_event_loop()
+        loop.create_task(run_bot())  # Chạy bot như một task trong event loop hiện tại
+        loop.run_forever()
