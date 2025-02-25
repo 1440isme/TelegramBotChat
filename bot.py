@@ -5,9 +5,6 @@ from flask import Flask, request
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
 import asyncio
-import nest_asyncio
-nest_asyncio.apply()
-
 
 # Lấy Token từ biến môi trường
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
@@ -69,17 +66,19 @@ async def webhook():
     await bot_app.process_update(update)
     return "OK", 200
 
-def run_bot():
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-
-    bot_app.run_webhook(
+async def run_bot():
+    """Chạy bot Telegram dưới dạng webhook"""
+    await bot_app.run_webhook(
         listen="0.0.0.0",
         port=int(os.environ.get("PORT", 8080)),
         webhook_url=f"https://your-render-url/{TELEGRAM_TOKEN}"
     )
 
+async def main():
+    """Chạy song song Flask và bot Telegram trong một event loop"""
+    loop = asyncio.get_running_loop()
+    loop.create_task(run_bot())  # Chạy bot Telegram
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))  # Chạy Flask
+
 if __name__ == "__main__":
-    from threading import Thread
-    Thread(target=run_bot).start()
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+    asyncio.run(main())
