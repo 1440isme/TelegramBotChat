@@ -67,7 +67,11 @@ async def run_bot():
    
 
 if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    loop.create_task(run_bot())  # Chạy bot Telegram bằng polling
-    loop.run_forever()
+    try:
+        loop = asyncio.get_running_loop()  # Lấy event loop đang chạy
+    except RuntimeError:
+        loop = asyncio.new_event_loop()  # Tạo event loop mới nếu chưa có
+
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(run_bot())  # Chạy bot trên event loop hiện tại
 
