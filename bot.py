@@ -60,15 +60,13 @@ bot_app.add_handler(CommandHandler("help", help_command))
 bot_app.add_handler(CommandHandler("about", about))
 bot_app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, chat))
 
+
 async def run_bot():
-    """Chạy bot Telegram bằng polling"""
     await bot_app.run_polling()
 
-# Cách chạy bot an toàn trên Render
 if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
     try:
-        loop.run_until_complete(run_bot())
+        asyncio.run(run_bot())  # Cách chạy an toàn hơn trên Railway
     except RuntimeError:
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
